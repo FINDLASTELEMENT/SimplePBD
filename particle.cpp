@@ -3,7 +3,7 @@
 
 Particle::Particle(const Particle& other)
 {
-    this->initalize(other.imass, other.pos);
+    this->initalize(other);
 }
 
 Particle::~Particle()
@@ -13,14 +13,18 @@ Particle::~Particle()
 
 Particle& Particle::operator=(const Particle& other)
 {
-    this->initalize(other.imass, other.pos);
+    this->initalize(other);
     return *this;
 }
 
-void Particle::initalize(const real& imass, const glm::vec3& pos)
+void Particle::initalize(const Particle& p)
 {
-    this->imass = imass;
-    this->pos = pos;
+    this->imass = p.imass;
+    this->prevpos = p.prevpos;
+    this->friction = p.friction;
+    this->pos = p.pos;
+    this->vel = p.vel;
+    this->acc = p.acc;
 }
 
 void Particle::setMass(const real& mass)
@@ -33,15 +37,15 @@ void Particle::setImass(const real& imass)
     this->imass = imass;
 }
 
+void Particle::teleport(const vec3& pos)
+{
+    this->prevpos = pos;
+    this->pos = pos;
+}
+
 void Particle::setPos(const vec3& pos)
 {
     this->pos = pos;
-    this->propos = pos;
-}
-
-void Particle::setProPos(const vec3& pos)
-{
-    this->propos = pos;
 }
 
 void Particle::applyForce(const vec3& force)
@@ -51,17 +55,16 @@ void Particle::applyForce(const vec3& force)
 
 void Particle::update(const real& dt, const vec3& gravity)
 {
-    vel += (acc+gravity)*dt;
-    //vel = friction*vel;
-    propos = pos + vel*dt;
+    prevpos = pos;
+    vel += dt*(acc+gravity)*friction;
+    pos += vel*dt;
     
     acc = vec3(0, 0, 0);
 }
 
 void Particle::apply(const real& dt)
 {
-    vel = (propos - pos)/dt;
-    pos = propos;
-    //vel *= friction;
+    vel = (pos - prevpos)/dt;
+    //vel *= pow(friction, dt);
 }
 

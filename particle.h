@@ -4,12 +4,11 @@
 #include <glm/glm.hpp>
 #include "precision.h"
 
-using namespace glm;
 class Particle
 {
 public:
-    Particle() : imass(1), friction(1), acc(vec3(0, 0, 0)), vel(vec3(0, 0, 0)), pos(vec3(0, 0, 0)), propos(vec3(0, 0, 0)) {};
-    Particle(const real& mass, const real& friction, const vec3& pos) : imass(1/mass), friction(friction), acc(vec3(0,0,0)), vel(vec3(0,0,0)), pos(pos), propos(pos) {};
+    Particle() : imass(1), friction(1), acc(vec3(0, 0, 0)), vel(vec3(0, 0, 0)), prevpos(vec3(0, 0, 0)), pos(vec3(0, 0, 0)) {};
+    Particle(const real& mass, const real& friction, const vec3& pos) : imass(1/mass), friction(friction), acc(vec3(0,0,0)), vel(vec3(0,0,0)), prevpos(pos), pos(pos) {};
 
     Particle(const Particle& other);
 
@@ -17,12 +16,12 @@ public:
 
     Particle& operator=(const Particle& other);
     
-    void initalize(const real& imass, const vec3& pos);
+    void initalize(const Particle& p);
     
     void setMass(const real& mass);
     void setImass(const real& imass);
+    void teleport(const vec3& pos);
     void setPos(const vec3& pos);
-    void setProPos(const vec3& pos);
     
     void applyForce(const vec3& force);
     
@@ -33,8 +32,8 @@ public:
     real friction;
     vec3 acc;
     vec3 vel;
+    vec3 prevpos;
     vec3 pos;
-    vec3 propos;
 };
 
 #endif // PARTICLE_H

@@ -4,7 +4,7 @@
 
 void SpringEdge::update(const real& dt)
 {
-    real f = abs(glm::length(particleA.pos - particleB.pos) - initialDistance)*stiffness;
-    particleA.applyForce(f*glm::normalize(particleB.pos-particleA.pos));
-    particleB.applyForce(f*glm::normalize(particleA.pos-particleB.pos));
+    real f = std::abs(glm::length(particleA.prevpos - particleB.prevpos) - initialDistance)*stiffness;
+    particleA.applyForce(f*glm::normalize(particleB.prevpos-particleA.prevpos));
+    particleB.applyForce(f*glm::normalize(particleA.prevpos-particleB.prevpos));
 }

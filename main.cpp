@@ -8,10 +8,16 @@
 #include "particle.h"
 #include "springedge.h"
 #include "constraint.h"
+#include "consts.h"
 
-sf::Vector2f to2(vec3 x)
+sf::Vector2f to2(const vec3& x)
 {
     return sf::Vector2f(x.x, x.y);
+}
+
+vec3 to3(const sf::Vector2f& x)
+{
+    return vec3(x.x, x.y, 0);
 }
 
 void initCir(sf::CircleShape& cir)
@@ -21,71 +27,106 @@ void initCir(sf::CircleShape& cir)
 }
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(800, 600), "softbody!");
-    
-    Particle p1 = Particle(1, .9995, glm::vec3(400, 300, 0));
-    Particle p2 = Particle(1, .9995, glm::vec3(350, 300, 0));
-    Particle p3 = Particle(1, .9995, glm::vec3(300, 300, 0));
-    
-    DistanceConstraint d1 = DistanceConstraint(p1, p2, .5, 50);
-    DistanceConstraint d2 = DistanceConstraint(p2, p3, .5, 50);
-    
-    FixedConstraint f1 = FixedConstraint(p1, glm::vec3(400, 300, 0), 1);
-    
-    auto c1 = sf::CircleShape(5);
-    initCir(c1);
-    
-    auto c2 = sf::CircleShape(5);
-    initCir(c2);
-    
-    auto c3 = sf::CircleShape(5);
-    initCir(c3);
-    
+    int substep = 5;
+    int iteration = 1;
+
+    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "softbody!");
+
+    std::vector<Particle> particles(CNT, Particle(1, .8, vec3(400, 0, 0)));
+    for (int i=0; i<particles.size(); i++)
+    {
+        particles[i].setPos(vec3(400, i*INTERVAL+MARGIN, 0));
+    }
+    particles[0].setImass(0);
+
+    std::vector<DistanceConstraint> constraints;
+    for (int i=0; i<particles.size()-1; i++)
+    {
+        constraints.push_back(DistanceConstraint(particles[i], particles[i+1], 1, INTERVAL));
+    }
+
+    FixedConstraint f1 = FixedConstraint(particles[0], vec3(400, MARGIN, 0), 1);
+    FixedConstraint f2 = FixedConstraint(particles.back(), vec3(0, 0, 0), 0);
+
+    std::vector<sf::CircleShape> cirs(particles.size(), sf::CircleShape(3));
+    for ( auto& elem : cirs )
+    {
+        initCir(elem);
+    }
+
     sf::Clock deltaClock;
-    
+
+    bool draging = false;
+    sf::Vector2f mousePos = static_cast<sf::Vector2f>(sf::Mouse::getPosition(window));
+
     while (window.isOpen())
     {
         sf::Event event;
-        
+
         while (window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed)
             {
                 window.close();
             }
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+            {
+                draging = true;
+            }
+            if (!sf::Mouse::isButtonPressed(sf::Mouse::Left))
+            {
+                draging = false;
+            }
         }
-        
+
+        mousePos = static_cast<sf::Vector2f>(sf::Mouse::getPosition(window));
+
         window.clear(sf::Color::Black);
+
+        real dt = deltaClock.restart().asSeconds();
         
-        real dt = deltaClock.getElapsedTime().asSeconds();
-        
-        p1.update(dt, vec3(0, 0, 0));
-        p2.update(dt, vec3(0, 1000000, 0));
-        p3.update(dt, vec3(0, 1000000, 0));
-        
-        for (int i=0;i<20;i++)
+        if (1/dt < 60)
         {
-            d1.update();
-            d2.update();
-            f1.update();
+            printf("%f\n", 1/dt);
         }
-        
-        p1.apply(dt);
-        p2.apply(dt);
-        p3.apply(dt);
-        
-        c1.setPosition(to2(p1.pos));
-        c2.setPosition(to2(p2.pos));
-        c3.setPosition(to2(p3.pos));
-        
-        window.draw(c1);
-        window.draw(c2);
-        window.draw(c3);
-        
+
+        for (int i=0; i<substep; i++)
+        {
+            for (auto& elem : particles)
+            {
+                elem.update(dt/substep, vec3(0, 100, 0));
+            }
+
+            f2.pos = to3(mousePos);
+            f2.k = draging? 1 : 0;
+
+            for (int j=0; j<iteration; j++)
+            {
+
+
+                for (auto& elem : constraints)
+                {
+                    elem.update();
+                }
+
+                f1.update();
+                f2.update();
+            }
+
+            for (auto& elem : particles)
+            {
+                elem.apply(dt/substep);
+            }
+        }
+
+        for (int i=0; i<cirs.size(); i++)
+        {
+            cirs[i].setPosition(to2(particles[i].pos));
+            window.draw(cirs[i]);
+        }
+
         window.display();
-        
-        deltaClock.restart();
     }
-    
+
     return 0;
 }
