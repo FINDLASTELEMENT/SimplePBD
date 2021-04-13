@@ -1,4 +1,5 @@
 #include "particle.h"
+#include <cstdio>
 
 Particle::Particle(const Particle& other)
 {
@@ -35,6 +36,12 @@ void Particle::setImass(const real& imass)
 void Particle::setPos(const vec3& pos)
 {
     this->pos = pos;
+    this->propos = pos;
+}
+
+void Particle::setProPos(const vec3& pos)
+{
+    this->propos = pos;
 }
 
 void Particle::applyForce(const vec3& force)
@@ -42,10 +49,19 @@ void Particle::applyForce(const vec3& force)
     this->acc += force * imass;
 }
 
-void Particle::update(const real& dt)
+void Particle::update(const real& dt, const vec3& gravity)
 {
-    vel += acc*dt;
-    pos += vel*dt;
+    vel += (acc+gravity)*dt;
+    //vel = friction*vel;
+    propos = pos + vel*dt;
+    
     acc = vec3(0, 0, 0);
+}
+
+void Particle::apply(const real& dt)
+{
+    vel = (propos - pos)/dt;
+    pos = propos;
+    //vel *= friction;
 }
 
