@@ -32,7 +32,7 @@ int main() {
 
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "softbody!");
 
-    std::vector<Particle> particles(CNT, Particle(1, .8, vec3(400, 0, 0)));
+    std::vector<Particle> particles(CNT, Particle(1, .99995, vec3(400, 0, 0)));
     for (int i=0; i<particles.size(); i++)
     {
         particles[i].setPos(vec3(400, i*INTERVAL+MARGIN, 0));

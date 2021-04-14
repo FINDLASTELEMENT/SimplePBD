@@ -56,7 +56,8 @@ void Particle::applyForce(const vec3& force)
 void Particle::update(const real& dt, const vec3& gravity)
 {
     prevpos = pos;
-    vel += dt*(acc+gravity)*friction;
+    vel += dt*(acc+gravity);
+    vel *= friction;
     pos += vel*dt;
     
     acc = vec3(0, 0, 0);
