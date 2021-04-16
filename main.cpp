@@ -27,12 +27,12 @@ void initCir(sf::CircleShape& cir)
 }
 
 int main() {
-    int substep = 5;
+    int substep = SUBSTEP;
     int iteration = 1;
 
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "softbody!");
 
-    std::vector<Particle> particles(CNT, Particle(1, 1, vec3(400, 0, 0)));
+    std::vector<Particle> particles(CNT, Particle(1, FRICTION, vec3(400, 0, 0)));
     for (int i=0; i<particles.size(); i++)
     {
         particles[i].setPos(vec3(400+i*INTERVAL, MARGIN, 0));
@@ -87,16 +87,16 @@ int main() {
         
         if (1/dt < 60)
         {
-            printf("%f\n", 1/dt);
+            //printf("%f\n", 1/dt);
         }
 
         for (int i=0; i<substep; i++)
         {
             for (auto& elem : particles)
             {
-                elem.update(dt/substep, vec3(0, 100, 0));
+                elem.update(dt/substep, vec3(0, G, 0));
             }
-
+         
             f2.pos = to3(mousePos);
             //f2.k = draging? 1 : 0;
 
