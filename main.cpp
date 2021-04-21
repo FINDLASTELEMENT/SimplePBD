@@ -28,14 +28,14 @@ void initCir(sf::CircleShape& cir)
 
 int main() {
     int substep = SUBSTEP;
-    int iteration = 1;
+    int iteration = 20;
 
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "softbody!");
 
-    std::vector<Particle> particles(CNT, Particle(1, FRICTION, vec3(400, 0, 0)));
+    std::vector<Particle> particles(CNT, Particle(k, FRICTION, vec3(400, 0, 0)));
     for (int i=0; i<particles.size(); i++)
     {
-        particles[i].setPos(vec3(400+i*INTERVAL, MARGIN, 0));
+        particles[i].setPos(vec3(400, MARGIN+i*INTERVAL, 0));
     }
     particles[0].setImass(0);
 
@@ -83,39 +83,45 @@ int main() {
 
         window.clear(sf::Color::Black);
 
-        real dt = deltaClock.restart().asSeconds();
-        
+        real dt = deltaClock.restart().asSeconds()/SUBSTEP;
+
         if (1/dt < 60)
         {
             //printf("%f\n", 1/dt);
         }
-
+        
         for (int i=0; i<substep; i++)
         {
             for (auto& elem : particles)
             {
-                elem.update(dt/substep, vec3(0, G, 0));
+                elem.update(dt, vec3(0, G, 0));
             }
-         
+            
+            for (auto& elem : constraints)
+            {
+                elem.initilizeSolve();
+            }
+            
+            f1.initilizeSolve();
+            f2.initilizeSolve();
+
             f2.pos = to3(mousePos);
-            //f2.k = draging? 1 : 0;
+            f2.k = draging? 1 : 0;
 
             for (int j=0; j<iteration; j++)
             {
-
-
                 for (auto& elem : constraints)
                 {
-                    elem.update();
+                    elem.update(dt);
                 }
 
-                f1.update();
-                f2.update();
+                f1.update(dt);
+                f2.update(dt);
             }
 
             for (auto& elem : particles)
             {
-                elem.apply(dt/substep);
+                elem.apply(dt);
             }
         }
 
