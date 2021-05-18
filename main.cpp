@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <string>
 
 #include "SFML/Graphics.hpp"
 #include "SFML/Window.hpp"
@@ -9,6 +10,7 @@
 #include "springedge.h"
 #include "constraint.h"
 #include "consts.h"
+#include "font.h"
 
 sf::Vector2f to2(const vec3& x)
 {
@@ -28,11 +30,22 @@ void initCir(sf::CircleShape& cir)
 
 int main() {
     int substep = SUBSTEP;
-    int iteration = 20;
+    int iteration = 1;
 
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "softbody!");
+    
+    sf::Font font;
+    if (!font.loadFromMemory(__8bitOperatorPlus_Bold_ttf, __8bitOperatorPlus_Bold_ttf_len))
+    {
+        std::cout << "Error while loading font!" << std::endl;
+    }
+    
+    sf::Text fps;
+    fps.setFont(font);
+    fps.setCharacterSize(24);
+    fps.setFillColor(sf::Color::Blue);
 
-    std::vector<Particle> particles(CNT, Particle(k, FRICTION, vec3(400, 0, 0)));
+    std::vector<Particle> particles(CNT, Particle(k, FRICTION, vec3(X, 0, 0)));
     for (int i=0; i<particles.size(); i++)
     {
         particles[i].setPos(vec3(400, MARGIN+i*INTERVAL, 0));
@@ -45,7 +58,7 @@ int main() {
         constraints.push_back(DistanceConstraint(particles[i], particles[i+1], 1, INTERVAL));
     }
 
-    FixedConstraint f1 = FixedConstraint(particles[0], vec3(400, MARGIN, 0), 1);
+    FixedConstraint f1 = FixedConstraint(particles[0], vec3(X, MARGIN, 0), 1);
     FixedConstraint f2 = FixedConstraint(particles.back(), vec3(0, 0, 0), 0);
 
     std::vector<sf::CircleShape> cirs(particles.size(), sf::CircleShape(3));
@@ -84,11 +97,6 @@ int main() {
         window.clear(sf::Color::Black);
 
         real dt = deltaClock.restart().asSeconds()/SUBSTEP;
-
-        if (1/dt < 60)
-        {
-            //printf("%f\n", 1/dt);
-        }
         
         for (int i=0; i<substep; i++)
         {
@@ -124,12 +132,16 @@ int main() {
                 elem.apply(dt);
             }
         }
+        
+        fps.setString(std::to_string(1/(dt*SUBSTEP)));
 
         for (int i=0; i<cirs.size(); i++)
         {
             cirs[i].setPosition(to2(particles[i].pos));
             window.draw(cirs[i]);
         }
+        
+        window.draw(fps);
 
         window.display();
     }

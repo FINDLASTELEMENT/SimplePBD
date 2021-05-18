@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 
 project(softbodytest CXX)
 
-add_executable(softbodytest constraint.cpp constraint.h consts.h edge.cpp edge.h main.cpp particle.cpp particle.h precision.h springedge.cpp springedge.h)
+add_executable(softbodytest constraint.cpp constraint.h consts.h edge.cpp edge.h main.cpp particle.cpp particle.h precision.h springedge.cpp springedge.h font.h)
 
 if(CMAKE_EXE_LINKER_FLAGS STREQUAL "-static")
 	target_compile_definitions(softbodytest PUBLIC SFML_STATIC)
